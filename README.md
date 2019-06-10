@@ -1,1 +1,1 @@
-# Reddit Scraper Bot and Analysis Tools
+# Reddit scraper and analysis tool
