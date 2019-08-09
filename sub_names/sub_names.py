@@ -65,7 +65,7 @@ class Bot():
         filename = "sub_data.csv"
         bucket_name = "reddibot"
 
-        s3.upload_file("../sub_data.csv", bucket_name, filename)
+        s3.upload_file(filename, bucket_name, filename)
 
 
     def get_subs(self):
