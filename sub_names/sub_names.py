@@ -1,5 +1,4 @@
 import requests
-import time
 import pandas as pd
 import sys
 sys.path.append("../")
@@ -12,7 +11,7 @@ class SubNamesBot(reddibot.Bot):
     
     def get_subs(self):
         # Create an empty DataFrame object to store data
-        sub_names = pd.DataFrame({"SUB_NAME":[], "FULLNAME":[], "MEMBERS":[]})
+        sub_names = pd.DataFrame({"SUB_NAME":[], "FULLNAME":[]})
        
         # Keeping track of the total number of items received
         count = 0
@@ -20,14 +19,22 @@ class SubNamesBot(reddibot.Bot):
         params = {"show_users":False, "sort":"relevance", "include_categories":True, "limit":100}
         
         while True:
-            # The access token expired before the scraping was complete, so self.authenticate()
-            # had to be moved inside of the 'while' loop
-            self.authenticate()
-            headers = {"Authorization":self.token, "User-Agent":self.user_agent}
+
+            try:
+                # The access token expired before the scraping was complete, so self.authenticate()
+                # had to be moved inside of the 'while' loop
+                self.authenticate()
+                headers = {"Authorization":self.token, "User-Agent":self.user_agent}
                 
-            response = requests.get("https://oauth.reddit.com/subreddits", headers = headers, params = params)
-            response = response.json()["data"]
-            
+                response = requests.get("https://oauth.reddit.com/subreddits", headers = headers, params = params)
+                response = response.json()["data"]
+
+            except requests.ConnectionError:
+
+                print("ConnectionError thrown, subreddit data has been saved.")
+                # Break out of 'while' loop and save data
+                break
+
             # raw_sub_names is now a list of dictionaries, each containing data on a different subreddit
             raw_sub_names = response["children"]
 
@@ -47,8 +54,6 @@ class SubNamesBot(reddibot.Bot):
             params["count"] = count
                 
             print(count)
-            # Sleep for 5 seconds in an attempt to avoid 'Max retries exceeded with URL' Exception
-            time.sleep(10)
 
             # Check to see if the loop has scrolled through the entire listing
             if item_num < 100:
@@ -65,10 +70,3 @@ class SubNamesBot(reddibot.Bot):
 
     # def update_subs():
 
-
-
-
-
-bot = Bot()
-
-bot.get_subs()
