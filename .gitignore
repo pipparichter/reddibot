@@ -2,3 +2,5 @@
 # app to Heroku; this is poor practice, and doesn't need to be uploaded to GitHub (just the Heroku git)
 
 ./sub_names/reddibot.py
+./sub_names/__pycache__/
+./__pycache__/

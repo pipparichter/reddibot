@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 import sys
+# Make sure the parent directory is in path so reddibot can be imported
 sys.path.append("../")
 
 import reddibot
