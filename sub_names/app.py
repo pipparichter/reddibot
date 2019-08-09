@@ -11,11 +11,11 @@ def app(environ, start_response):
     # Make sure the file was correctly retrieved from AWS bucket, and catch any errors 
     try:
         # The "Body" key in the response is a StreamingBody object
-        body = s3.get_object(Bucket = "reddibot", Key = "sub_data.csv")["Body"]
+        body = s3.get_object(Bucket = "reddibot", Key = "sub_names.csv")["Body"]
         # Using the read method on the StreamingBody returns a bytestring, which can be converted back 
         # to unicode
-        sub_data = body.read()
-        sub_data = sub_data.decode("utf-8")
+        sub_names = body.read()
+        sub_names = sub_names.decode("utf-8")
 
     except Exception as err:
         
@@ -36,7 +36,7 @@ def app(environ, start_response):
 
         status = "200"
 
-        df = pd.read_csv(sub_data)
+        df = pd.read_csv(sub_names)
         data = str(df).encode("utf-8")
     
         headers = [("Content-Type", "text/plain")]
@@ -48,7 +48,7 @@ def app(environ, start_response):
 
         status = "200"
         
-        data = sub_data.encode("utf-8")
+        data = sub_names.encode("utf-8")
 
         headers = [("Content-Type", "text/csv")]
         start_response(status, headers)

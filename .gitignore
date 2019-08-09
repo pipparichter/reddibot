@@ -1,0 +1,4 @@
+# There is a duplicate of reddibot.py in the sub_names directory so I could easily deploy the directory as an
+# app to Heroku; this is poor practice, and doesn't need to be uploaded to GitHub (just the Heroku git)
+
+./sub_names/reddibot.py
