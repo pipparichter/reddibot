@@ -50,13 +50,23 @@ class Bot():
         return sub_data
 
     # Writes the sub data to a file in CSV format
-    def save(sub_data):
+    def save_local(sub_data):
 
-        # with open("./sub_names.csv", 'w') as f:
         with open("./sub_names.csv", 'w') as f:
 
             sub_data.to_csv(f)
-    
+
+
+    def save_aws(sub_data):
+        
+        import boto3
+        s3 = boto3.client("s3")
+        
+        filename = "sub_data.csv"
+        bucket_name = "reddibot"
+
+        s3.upload_file("../sub_data.csv", bucket_name, filename)
+
 
     def get_subs(self):
         # Create an empty DataFrame object to store data
@@ -67,7 +77,7 @@ class Bot():
 
         params = {"show_users":False, "sort":"relevance", "include_categories":True, "limit":100}
         
-        for i in range(50):
+        while True:
             # The access token expired before the scraping was complete, so self.authenticate()
             # had to be moved inside of the 'while' loop
             self.authenticate()
@@ -106,10 +116,12 @@ class Bot():
         # Clean up the data
         sub_data = Bot.clean(sub_data)
         # Write the sub data to sub_names.csv
-        Bot.save(sub_data)
+        Bot.save_local(sub_data)
+        # Upload the sub data to AWS reddibot bucket
+        Bot.save_aws(sub_data)
 
 
-    # def update_subs():
+    def update_subs():
 
 
 
