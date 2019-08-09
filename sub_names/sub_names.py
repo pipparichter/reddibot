@@ -52,7 +52,7 @@ class Bot():
     # Writes the sub data to a file in CSV format
     def save_local(sub_data):
 
-        with open("./sub_names.csv", 'w') as f:
+        with open("./sub_data.csv", 'w') as f:
 
             sub_data.to_csv(f)
 
@@ -115,7 +115,7 @@ class Bot():
         
         # Clean up the data
         sub_data = Bot.clean(sub_data)
-        # Write the sub data to sub_names.csv
+        # Write the sub data to sub_data.csv
         Bot.save_local(sub_data)
         # Upload the sub data to AWS reddibot bucket
         Bot.save_aws(sub_data)
