@@ -52,7 +52,7 @@ class Bot():
     # Writes the sub data to a file in CSV format
     def save_local(sub_data):
 
-        with open("./sub_data.csv", 'w') as f:
+        with open("../sub_data.csv", 'w') as f:
 
             sub_data.to_csv(f)
 
