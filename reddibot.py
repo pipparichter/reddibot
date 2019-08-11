@@ -66,4 +66,7 @@ class Bot():
 
         s3.upload_file(filename, bucket_name, filename)
 
+    
+    def send_report(report)
+
 
