@@ -50,7 +50,7 @@ class Bot():
     # Writes the sub data to a file in CSV format
     def save_local(sub_data, filename):
 
-        path = "~/Documents/programs/reddibot/sub_data.csv" + filename
+        path = "~/Documents/programs/reddibot/" + filename
 
         with open(path, 'w') as f:
 
@@ -66,7 +66,21 @@ class Bot():
 
         s3.upload_file(filename, bucket_name, filename)
 
-    
-    def send_report(report)
+    # Sends a specified report to me if anything goes wrong with the bot 
+    def send_report(self, report):
+        
+        print(self.authenticate())
+
+        headers = {"Authorization":self.token, "User-Agent":self.user_agent}
+        params = {
+                    "api_type":"json", 
+                    "subject":"reddibot Alert", 
+                    "text":report,
+                    "to":"pipparichter"
+                }
+        
+        response = requests.post("https://oauth.reddit.com/api/compose", params = params, headers = headers)
+        
+
 
 
