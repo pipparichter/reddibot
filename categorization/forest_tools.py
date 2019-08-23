@@ -45,44 +45,96 @@ class Subreddit:
         self.name = name
 
     # The profile contains the attributes of an item, on which the splits will be made
+    # This part of the process will probably need to be sped up
     def build_profile(self):
         
-        for letter in self.name:
-            # Avoid having to search the entire combined dictionary by looping through only the
-            # relevant letters
-            for word in combined[letter]:
+        for word in combined[letter]:
                 
-                pattern = re.compile(f"{word}")
-                # What is the difference between 'is not' and '!='?
-                if pattern.search(self.name) is not None:
+            pattern = re.compile(f"{word}")
+            # What is the difference between 'is not' and '!='?
+            if pattern.search(self.name) is not None:
 
-                    profile[word] = True
+                profile[word] = True
 
-                else:
-                    # This may not be worth doing; if this is horrifically slow, remove
-                    profile[word] = False
-    # Note that profile does not contain a 'False' value for every word the Subreddit name does not contain;
-    # it does have a true value for every name it does contain
+            else:
+                profile[word] = False
 
 # Class for implementing a node in the decision tree
 class Node:
     
+    # Apparently all member data which are assigned a value in the class (not in init) are by default
+    # static, no keyword needed!
+    
+    split_criterion = None
+    # A list of all of the attributes (i.e. words) that could be used for splitting
+    attributes = [word for word in letter in combined]
+    # 'data' is a list of Subreddit objects contained by the Node
+    data = []
     # The children attribute is a list of Nodes objects (i.e. the 0, 1, or 2 nodes branching from the Node)
-    children = []
+    children = [None, None]
 
+    def __init__(self, data):
+
+        self.data = data
+
+    # Splits a node with respect to a certain attribute, where attribute is a possible substring in the
+    # Subreddit name
+    def split_node(node, attribute):
+        # Node for which the attribute is False
+        left_child = Node([])
+        # Node for which the attribute is True
+        right_child = Node([])
+
+        for sub in node:
+            
+            if sub.profile[attribute] == False:
+
+                left_child.data.append(sub)
+
+            else:
+
+                right_child.data.append(sub)
+
+        node.children[0], node.children[1] = left_child, right_child
+    
+    # Selects the best attribute on which to split the dataset, and applies the split to self
+    def split_node_optimized(self):
+        # The highest possible Gini impurity index is 1.0
+        lowest_gini = 1.0
+        # 'best_split' will eventually be a Node object with two children
+        best_split = None
+
+        for attribute in Node.attributes:
+            # Create a new Node object so testing the plits won't screw with self
+            new_node = Node(self.data)
+            new_node.split_criterion = attribute
+            # Remember that this function is inplace
+            Node.split(new_node, attribute)
+            gini = DecisionTree.get_gini(new_node.children)
+
+            if gini < lowest_gini:
+
+                best_split = new_node
+        
+        # Apply the best split to self
+        self.children = best_split.children
 
 
 # Class for implementing the decision tree itself
 class DecisionTree:
     
-    # The decision tree will essentially be a list of lists of lists of lists... and so on... of Nodes. Pointers
-    # would make my life so much easier, thanks a lot Python
-    tree = []
+    max_depth = 100
+    # 'tree' is a Node object instance
+    tree = None 
+    
+    def __repr__(self):
 
-    # Initialize the decision tree with a root node, i.e. a list of Subreddit objects
-    def __init__(root):
+        
+    
+    # Initialize the decision tree with a root node, by inputting a list of Subreddit objects
+    def __init__(self, root_data):
 
-        tree[0] = root
+        self.tree = DecisionTree.generate_tree(Node(root_data))
         
     # This calculates the Gini impurity of a given split
     # The input is a list containing a left and right child nodes
@@ -118,10 +170,38 @@ class DecisionTree:
             gini += g_weighted
         
         return gini
+   
+    # Creates the decision tree; it takes a root node as input, and grows the tree
+    def generate_tree(node, count = 0):
+        # Populates the 'children' attibute of 'node'
+        node.split_node_optimized()
+        count += 1
+        
+        left_child = node.children[0]
+        right_child = node.children[1]
+        # Prevent the tree from exceeding the set max_depth 
+        if count == self.max_depth:
+            return
+        elif (left_child == None) and (right_child == None):
+            return
+
+        elif (left_child == None):
+            DecisionTree.generate_tree(right_child, count)
+        elif (right_child == None):
+            DecisionTree.generate_tree(left_child, count)
+        # If neither the left or right child nodes are None, call generate_tree on each
+        else:
+            DecisionTree.generate_tree(left_child, count)
+            DecisionTree.generate_tree(right_child, count)
+    
+    
+    def tree_predict(self, node):
+
+        for sub in node.data:
+
+            if 
 
 
-    def generate_tree()
-      
 
 class RandomForest:
     # Is there an enum type equivalent in Python?
@@ -151,13 +231,12 @@ class RandomForest:
             sub.build_profile()
             self.subs.append(sub)
     
-    
 
     def create_training_subset(self):
         
         # How big do I want each training subset to be? How big does the entire training set need to be?
         # I think it should be around one-third of the entire training dataset. 
-        for i i 
+         
 
     # How am I going to build a training dataset?
     def sort():
