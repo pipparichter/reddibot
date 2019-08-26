@@ -1,11 +1,11 @@
 import requests
+import random
 import pandas as pd
 import sys
 # Make sure the parent directory is in path so reddibot can be imported
 sys.path.append("../")
 
 import reddibot
-
 
 
 class SubNamesBot(reddibot.Bot):
@@ -61,6 +61,15 @@ class SubNamesBot(reddibot.Bot):
 
                 break
         
+        # Shuffle the names
+        copy = sub_names[:]
+        shuffled = []
+        for i in range(len(copy)):
+            add = random.choice(copy)
+            copy.remove(add)
+            shuffled.append(add)
+        sub_names = shuffled
+
         # Clean up the data
         sub_names = reddibot.Bot.clean(sub_names)
         # Write the sub data to sub_names.csv
@@ -70,4 +79,4 @@ class SubNamesBot(reddibot.Bot):
 
 
     # def update_subs():
-
+     
