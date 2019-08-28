@@ -62,16 +62,18 @@ class SubNamesBot(reddibot.Bot):
                 break
         
         # Shuffle the names
-        copy = sub_names[:]
-        shuffled = []
-        for i in range(len(copy)):
-            add = random.choice(copy)
-            copy.remove(add)
-            shuffled.append(add)
-        sub_names = shuffled
+        for i in range(len(sub_names.index)):
+            random_ind = random.randint(0, len(sub_names.index) - 1)
+            # REMEMBER TO ASSIGN TMP TO A COPY!!! pd.Series are mutable, so messing with one
+            # will mess with the other
+            tmp = sub_names.iloc[i].copy()
+            sub_names.iloc[i] = sub_names.iloc[random_ind].copy()
+            sub_names.iloc[random_ind] = tmp
+        # Reset the indices
+        sub_names.reindex([n for n in range(len(sub_names.index))])
 
         # Clean up the data
-        sub_names = reddibot.Bot.clean(sub_names)
+        # sub_names = reddibot.Bot.clean(sub_names)
         # Write the sub data to sub_names.csv
         reddibot.Bot.save_local(sub_names, "sub_names.csv")
         # Upload the sub data to AWS reddibot bucket

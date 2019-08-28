@@ -17,17 +17,9 @@ random.seed(11092001)
 # every word from both dictionaries which begins with that letter
 combined = dicts.combined
 
-# ----------------------------- Loading sub names -------------------------------------------
+# ----------------------------- Loading training and test data -------------------------------------------
 
-def load_subs():
-
-    with open("../sub_names/sub_names.csv", 'r') as f:
-        
-        df = pd.read_csv(f)
-        # Have to convert the pd.Series object to np.array
-        names = np.array(df["SUB_NAMES"])
-    # 'names' is a numpy array containing every sub name
-    return names
+def load_data():
 
 # -------------------------------- Class definitions -----------------------------------------
 
@@ -74,7 +66,7 @@ class Node:
     # The criterion upon which the node was split (assigned by the DecisionTree.generate_tree function)
     split_criterion = None
     # A list of all of the attributes (i.e. words) that could be used for splitting
-    attributes = [word for word in letter in combined]
+    attributes = combined[:]
     # 'data' is a list of Subreddit objects contained by the Node
     data = []
     # The children attribute is a list of Nodes objects (i.e. the 0, 1, or 2 nodes branching from the Node)
@@ -95,12 +87,9 @@ class Node:
 
         for sub in node:
             
-            if sub.attributes[attribute] == False:
-
+            if (sub.attributes[attribute] == False):
                 left_child.data.append(sub)
-
             else:
-
                 right_child.data.append(sub)
 
         node.children[0], node.children[1] = left_child, right_child
@@ -125,12 +114,11 @@ class Node:
                 new_node.split_criterion = attribute
                 best_split = new_node
 
-        # If no split exists, then the current Node object is a terminal Node
+        # If no split exists that's more efficient than 1.0, then the current Node object is a terminal Node
         if (lowest_gini == 1.0):
             self.is_terminal = True
             # Assign the terminal Node a category
-            possible_cats = [node.category for node in self.data]
-
+            self.category = max([sub.category for sub in self.data], key = list.count)
         else:
             # Apply the split to self
             self.children = best_split.children
@@ -140,14 +128,15 @@ class Node:
 # Class for implementing the decision tree itself
 class DecisionTree:
     
+    training_data = None
     max_depth = 100
     # 'tree' is a Node object instance
-    tree = None         
+    root = None         
     
-    # Initialize the decision tree with a root node, by inputting a list of Subreddit objects
-    def __init__(self, root_data):
+    # Initialize the decision tree with training data by inputting a list of Subreddit objects
+    def __init__(self, training_data):
 
-        self.tree = DecisionTree.generate_tree(Node(root_data))
+        self.root = DecisionTree.generate_tree(Node(training_data))
         
     # This calculates the Gini impurity of a given split
     # The input is a list containing a left and right child nodes
@@ -185,34 +174,39 @@ class DecisionTree:
         return gini
    
     # Creates the decision tree; it takes a root node as input, and grows the tree
-    def generate_tree(node, count = 0):
+    def generate_tree(self, node = None, count = 0):
+
+        if (count == 0):
+            node = self.root
+
         # Populates the 'children' attibute of 'node'
         node.split_node_optimized()
         count += 1
         
-        left_child = node.children[0]
-        right_child = node.children[1]
-        # Prevent the tree from exceeding the set max_depth, or st
+        # If the node is terminal, stop growing the branch
+        if node.is_terminal:
+            return
+        # If the max depth has been reached, stop growing the branch
         if (count == self.max_depth):
             return
-        
-        # If this conditional is True, then the node contains no data and is terminal
-        elif (left_child == None) and (right_child == None):
-            node.
-            node.is_terminal = True
-            return
 
-        # If neither the left or right child nodes are None, call generate_tree on each
-        else:
-            DecisionTree.generate_tree(left_child, count)
-            DecisionTree.generate_tree(right_child, count)
+        left_child = node.children[0]
+        right_child = node.children[1]
+        # If branch growth can continue, call generate_tree on each child node
+        self.generate_tree(left_child, count)
+        self.generate_tree(right_child, count)
     
-    
-    def sub_predict(self, node, sub):    
+    # Returns the inputted Subreddit object with an assigned category; the first Node
+    # object plugged into the funcion should be the root node
+    def sub_predict(self, node, sub):
 
-        node.data.append(sub)
         criterion = node.split_criterion
         
+        # If a terminal Node is reached, assign the Subreddit 'category' attribute
+        if node.is_terminal:
+            sub.category = node.category
+            return sub
+
         if sub.attributes[criterion] == True:
             # If the sub has this attribute, then it gets sorted into the 'true' branch
             next_node = node.children[1]
@@ -220,10 +214,19 @@ class DecisionTree:
             # If the sub does not have this attribute, then it gets sorted into the 'false' branch
             next_node = node.children[0]
         
-        self.sub_predict(self, next_node, sub)
+        DecisionTree.sub_predict(next_node, sub)
 
-
-    def subs_predict(self, subs)
+    # Returns a list of Subreddit objects which have been assigned categories, and takes a list of 
+    # unpredicted Subreddit objects as input
+    def predict(self, test_data):
+    
+        predicted = []
+        self.generate_tree()
+        
+        for sub in test_data:
+            predicted.append(DecisionTree.sub_predict(self.root, sub))
+        
+        return predicted
 
 
 
@@ -275,17 +278,7 @@ class RandomForest:
         self.training = training 
 
     # How am I going to build a training dataset?
-    def sort():
-
-
-
-
-
-
-        
-    
-    
-
+    # def sort():
 
 
 

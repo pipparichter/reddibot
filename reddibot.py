@@ -50,7 +50,7 @@ class Bot():
     # Writes the sub data to a file in CSV format
     def save_local(sub_data, filename):
 
-        path = "~/Documents/programs/reddibot/" + filename
+        path = "./" + filename
 
         with open(path, 'w') as f:
 
@@ -79,7 +79,7 @@ class Bot():
                     "to":"pipparichter"
                 }
         
-        response = requests.post("https://oauth.reddit.com/api/compose", params = params, headers = headers)
+        requests.post("https://oauth.reddit.com/api/compose", params = params, headers = headers)
         
 
 
