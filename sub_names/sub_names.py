@@ -73,7 +73,7 @@ class SubNamesBot(reddibot.Bot):
         sub_names.reindex([n for n in range(len(sub_names.index))])
 
         # Clean up the data
-        # sub_names = reddibot.Bot.clean(sub_names)
+        sub_names = reddibot.Bot.clean(sub_names)
         # Write the sub data to sub_names.csv
         reddibot.Bot.save_local(sub_names, "sub_names.csv")
         # Upload the sub data to AWS reddibot bucket
