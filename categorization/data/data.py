@@ -11,7 +11,7 @@ def load_subs():
         
         df = pd.read_csv(f)
         # Have to convert the pd.Series object to np.array
-        names = np.array(df["SUB_NAMES"])
+        names = np.array(df["SUB_NAME"])
     # 'names' is a numpy array containing every sub name
     return names
 
@@ -20,11 +20,9 @@ def load_subs():
 
 sub_names = load_subs()
 
-training = pd.DataFrame()
-training.columns = np.array(["SUB_NAME", "CATEGORY"])
+training = pd.DataFrame(columns = ["SUB_NAME", "CATEGORY"])
 
-test = pd.DataFrame()
-test.columns = np.array(["SUB_NAME"])
+test = pd.DataFrame(columns = ["SUB_NAME"])
 
 # All of the items in sub_names.csv have been shuffled (when the file was initially
 # written), so indexing directly is fine
@@ -36,12 +34,19 @@ test.columns = np.array(["SUB_NAME"])
 # For now, I'll probably ignore the validation set and just see how to first
 # part turns out
 
-# The entire dataset is probably around 300,000 subreddits
+# The entire dataset is probably around 3,000 subreddits (why so few?)
 
 
 # Creating the training data (ugh) -----------------------------------
 
-training_subs = np.array(sub_names[:10000])
+# Basically every subreddit name which isn't going to be part of the training set
+test_subs = np.array(sub_names[1000:])
+test = pd.DataFrame({"SUB_NAME":test_subs})
+test.to_csv("./test_data.csv")
+
+
+# 'training_subs' is a list of 1,000 subreddit names
+training_subs = np.array(sub_names[:1000])
 
 categories = {  
                 1:"Sports",                 2:"Gaming", 
@@ -59,34 +64,41 @@ categories = {
                 25:"Relationships",         26:"Science", 
                 27:"Video Games",           28:"Videos", 
                 29:"Vroom",                 30:"Wholesome"
-                
             }
 
+
 i = 0
-while i < len(training_subs):
+while i < 1000:
     
     sub = training_subs[i]
     
     try:
-        num = int(input(f"{sub}: "))
-        print('\n')
+        num = int(input(f"{i}. {sub}: "))
         
         # If zero is entered to std in, then re-do the categorization for the previous
         # subreddit. 
         if (num == 0):
-            i -= 1
-            training.drop()
+
+            if (i > 0): i -= 1
+            else: i = 0
+
+            training.drop([i])
 
         else:
             category = categories[num]
-            training.append({"SUB_NAME":sub, "CATEGORY":category})
-            
+            add = pd.DataFrame({"SUB_NAME":sub, "CATEGORY":category}, index = [i])
+            print(add)
+            training = training.append(add)
+            print(training)
             i += 1
     
     # If something other than an integer is passed to std in, then repeat the prompt for
     # the same subreddit name
-    except ValueError:
+    # except (ValueError, KeyError):
         
-        pass
+        # pass
+    except (ValueError, KeyError) as e:
+        print(e)
 
-
+# Save the training data
+training.to_csv("./training_data.csv")
