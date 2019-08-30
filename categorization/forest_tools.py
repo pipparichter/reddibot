@@ -17,24 +17,21 @@ random.seed(11092001)
 # every word from both dictionaries which begins with that letter
 combined = dicts.combined
 
-# ----------------------------- Loading training and test data -------------------------------------------
-
-def load_data():
-
 # -------------------------------- Class definitions -----------------------------------------
 
 # This is basically the replacement class for 'item,' which will populate a node of the tree
 class Subreddit:
     
-    category = ''
-    name = ''
+    category = None
+    name = None
     # 'attributes' is a dictionary in which every key is a word in 'combined' and every value is a 
     # boolean indicating whether or not the word is 'in' the subreddit name
     attributes = {}
 
-    def __init__(self, name):
+    def __init__(self, name, category = None):
         
         self.name = name
+        self.category = category
 
     # The attributes contains the attributes of an item, on which the splits will be made
     # This part of the process will probably need to be sped up
@@ -57,8 +54,6 @@ class Node:
     # Apparently all member data which are assigned a value in the class (not in init) are by default
     # static, no keyword needed!
     
-    # Stores the Node's parent Node
-    parent = None
     # If the Node is terminal, then this attribute is assigned 
     category = None
     # This is marked True if the Node is terminal
@@ -128,7 +123,6 @@ class Node:
 # Class for implementing the decision tree itself
 class DecisionTree:
     
-    training_data = None
     max_depth = 100
     # 'tree' is a Node object instance
     root = None         
@@ -238,47 +232,35 @@ class RandomForest:
                   "Fashion", "Finance and Business", "Food", "Health and Fitness", "Learning", "Mindblowing",
                   "Outdoors", "Parenting", "Photography", "Relationships", "Science", "Video Games", 
                   "Videos", "Vroom", "Wholesome"]
-    sub_names = None
-    # subs is a list of Subreddit objects which have not yet been categorized
-    subs = []
-    # categorized contains a list of Subreddit objects for which the category attribute is known
-    categorized = None
-    # training contains a list of Subreddit objects for which the category attribute is known
-    # This is the training set (should end up being around a third of the size of subs)
-    training = []
 
+    # 'results' contains a list of Subreddit objects for which the category attribute is known
+    results = None
+    # 'training' contains a list of Subreddit objects for which the category attribute is known
+    # This is the training set (should end up being around a third of the size of subs)
+    training = None
+    # 'test' contains a list of Subreddit objects for which the category attribute is not
+    # known. 
+    test = None
 
     def __init__(self):
-
-        self.sub_names = load_subs()
-        # Initialize the sub_attributess dictionary
-        for sub_name in sub_names:
-
-            sub = Subreddit(sub_name)
-            # Assign the sub.attributes attribute
-            sub.build_attributes()
-            self.subs.append(sub)
-    
-
-    def create_training_subset(self):
+        # Initialize the 'test' and 'training' attributes
+        training_info = pd.read_csv("./data/training_data.csv")
+        self.training = [Subreddit(t[0], t[1]) for t in training_info.itertuples(index = False)]
         
-        # How big do I want each training subset to be? How big does the entire training set need to be?
-        # I think it should be around one-third of the entire training dataset (not happening lol) 
-        # I'll take a random guess and make it 1000 to begin with
-        count = 0
-        training = []
+        test_info = list(pd.read_csv("./data/test_data.csv")["SUB_NAME"])
+        self.test = [Subreddit(name) for name in test_info]
+    
+    def choose_training_set():
+        
+        for i in range()
+        ts = []
+        ts.append(random.choice(self.training))
+    
+    def generate_forest():
 
-        for i in range(1000):
-            
-            sub = subs[i]
+        for i in range(_):
+            training_set = self.choose_training_set()
 
-            category = input(f"{count}. {sub.name}, enter category: ")
-            print('\n')
+    def predict(self):
 
-        self.training = training 
-
-    # How am I going to build a training dataset?
-    # def sort():
-
-
-
+        for 

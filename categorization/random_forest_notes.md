@@ -69,10 +69,15 @@ There are three ways to specify the termination of a tree: <br/>
 just that the subsets will get to specific? (overfitting, again)*
 
 
+## Creating a random forest
+
+# Bootstrap aggregating
+
+'Bootstrapping' "is any test or metric that relies on random sampling with replacement"; this statistical method is called 'bagging' for short ([Wikipedia][5]) (alternatively, there is sub-bagging, which involves choosing sub-groups for testing without replacement). When creating a random forest, each decision tree is trained on a bag of data from the available training data. 
+
 [1]: https://en.wikipedia.org/wiki/Overfitting
 [2]: https://machinelearningmastery.com/implement-decision-tree-algorithm-scratch-python/
 [3]: https://www.displayr.com/how-is-splitting-decided-for-decision-trees/
 [4]: https://en.wikipedia.org/wiki/Decision_tree_learning#Gini_impurity
+[5]: https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
 
-
-## Creating a random forest
