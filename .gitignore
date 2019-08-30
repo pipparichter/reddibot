@@ -2,4 +2,4 @@
 # app to Heroku; this is poor practice, and doesn't need to be uploaded to GitHub (just the Heroku git)
 
 **/__pycache__/
-categorization/out_of_bag_estimation_of_the_optimal_sample_size_in_bagging.pdf
+./categorization/articles/*

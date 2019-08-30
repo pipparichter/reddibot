@@ -226,6 +226,8 @@ class DecisionTree:
 
 
 class RandomForest:
+    # 'trees' is a list of DecisionTree objects
+    trees = None    
     # Is there an enum type equivalent in Python?
     categories = ["Sports", "Gaming", "News", "TV", "Aww", "Memes", "Pics and Gifs", "Travel",
                   "Tech" "Music", "Art and Design", "Beauty", "Books and Writing", "Crypto", "Discussion",
@@ -238,6 +240,8 @@ class RandomForest:
     # 'training' contains a list of Subreddit objects for which the category attribute is known
     # This is the training set (should end up being around a third of the size of subs)
     training = None
+    # 'N' is the size of the training dataset
+    N = len(training)
     # 'test' contains a list of Subreddit objects for which the category attribute is not
     # known. 
     test = None
@@ -250,17 +254,27 @@ class RandomForest:
         test_info = list(pd.read_csv("./data/test_data.csv")["SUB_NAME"])
         self.test = [Subreddit(name) for name in test_info]
     
-    def choose_training_set():
-        
-        for i in range()
-        ts = []
-        ts.append(random.choice(self.training))
-    
-    def generate_forest():
+    # Returns a list of Subreddit objects from the training dataset (i.e. with known
+    # categories)
+    def bootstrap(self):
+        # 'subbag' is a subset of the training set selected randomly with replacement
+        bag = []
 
-        for i in range(_):
-            training_set = self.choose_training_set()
+        for i in range(int(0.8*self.N)):
+            bag.append(random.choice(self.training))
+        
+        return subbag
+
+    def generate_forest(self):
+       
+        self.trees = []
+        # How many decision trees should there be?
+        for i in range():
+            training_set = self.bootstrap()
+            # Initialize a decision tree with the training data
+            tree = DecisionTree(training_set)
+            trees.append(tree)
 
     def predict(self):
-
+        
         for 
