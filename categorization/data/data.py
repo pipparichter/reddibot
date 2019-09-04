@@ -87,9 +87,7 @@ while i < 1000:
         else:
             category = categories[num]
             add = pd.DataFrame({"SUB_NAME":sub, "CATEGORY":category}, index = [i])
-            print(add)
             training = training.append(add)
-            print(training)
             i += 1
     
     # If something other than an integer is passed to std in, then repeat the prompt for

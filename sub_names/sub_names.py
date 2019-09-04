@@ -2,6 +2,7 @@ import requests
 import random
 import pandas as pd
 import sys
+import time
 # Make sure the parent directory is in path so reddibot can be imported
 sys.path.append("../")
 
@@ -9,15 +10,17 @@ import reddibot
 
 
 class SubNamesBot(reddibot.Bot):
-    
+    # A list of every unique "advertiser_categories" the bot finds
+    advertiser_categories = []
+
     def get_subs(self):
         # Create an empty DataFrame object to store data
-        sub_names = pd.DataFrame({"SUB_NAME":[], "FULLNAME":[]})
+        sub_data = pd.DataFrame({"SUB_NAME":[], "FULLNAME":[], "CATEGORY":[]})
        
         # Keeping track of the total number of items received
         count = 0
 
-        params = {"show_users":False, "sort":"relevance", "include_categories":True, "limit":100}
+        params = {"show_users":False, "sort":"relevance", "include_categories":True, "limit":1}
         
         while True:
 
@@ -27,58 +30,69 @@ class SubNamesBot(reddibot.Bot):
                 self.authenticate()
                 headers = {"Authorization":self.token, "User-Agent":self.user_agent}
                 
-                response = requests.get("https://oauth.reddit.com/subreddits", headers = headers, params = params)
+                response = requests.get(
+                                        "https://oauth.reddit.com/subreddits", 
+                                        headers = headers, 
+                                        params = params
+                                        )
                 response = response.json()["data"]
+                # Trying to prevent reddit from ratelimiting me
+                # time.sleep(8)
 
             except requests.ConnectionError:
-
                 print("ConnectionError thrown, subreddit data has been saved.")
                 # Break out of 'while' loop and save data
                 break
 
-            # raw_sub_names is now a list of dictionaries, each containing data on a different subreddit
-            raw_sub_names = response["children"]
+            # raw_sub_data is now a list of dictionaries, each containing data on a different subreddit
+            raw_sub = response["children"][0]["data"]
+            new = {}
 
-            for sub in raw_sub_names:
+            new["SUB_NAME"] = raw_sub["display_name"]
+            new["FULLNAME"] = raw_sub["name"]
 
-                new = {}
+            try:
+                cat = raw_sub["advertiser_category"]
+                new["CATEGORY"] = cat
+                # If the category is new, add it to the "advertiser_categories" list
+                if cat not in self.advertiser_categories:
+                    self.advertiser_categories.append(cat)
 
-                new["SUB_NAME"] = sub["data"]["display_name"]
-                new["FULLNAME"] = sub["data"]["name"]
-                    
-                sub_names = sub_names.append(new, ignore_index = True)
+            except KeyError:
+                new["CATEGORY"] = None
+                
+            sub_data = sub_data.append(new, ignore_index = True)
 
             params["after"] = response["before"]
 
-            item_num = len(raw_sub_names)
-            count += item_num
+            count += 1
             params["count"] = count
-                
             print(count)
 
-            # Check to see if the loop has scrolled through the entire listing
-            if item_num < 100:
-
-                break
+            # Clean up the data
+        sub_data = reddibot.Bot.clean(sub_data)
         
-        # Shuffle the names
-        for i in range(len(sub_names.index)):
-            random_ind = random.randint(0, len(sub_names.index) - 1)
+        # Shuffle the names (the clean function has put them into alphabetical order)
+        for i in range(len(sub_data.index)):
+            random_ind = random.randint(0, len(sub_data.index) - 1)
             # REMEMBER TO ASSIGN TMP TO A COPY!!! pd.Series are mutable, so messing with one
             # will mess with the other
-            tmp = sub_names.iloc[i].copy()
-            sub_names.iloc[i] = sub_names.iloc[random_ind].copy()
-            sub_names.iloc[random_ind] = tmp
+            tmp = sub_data.iloc[i].copy()
+            sub_data.iloc[i] = sub_data.iloc[random_ind].copy()
+            sub_data.iloc[random_ind] = tmp
         # Reset the indices
-        sub_names.reindex([n for n in range(len(sub_names.index))])
+        sub_data.reindex([n for n in range(len(sub_data.index))])
 
-        # Clean up the data
-        sub_names = reddibot.Bot.clean(sub_names)
-        # Write the sub data to sub_names.csv
-        reddibot.Bot.save_local(sub_names, "sub_names.csv")
+       # Write the sub data to sub_data.csv
+        reddibot.Bot.save_local(sub_data, "sub_data.csv")
         # Upload the sub data to AWS reddibot bucket
-        reddibot.Bot.save_aws(sub_names, "sub_names.csv")
+        reddibot.Bot.save_aws(sub_data, "sub_data.csv")
 
+        # Also save the categories
+        with open("categories.txt", 'w') as f:
+            for category in self.advertiser_categories:
+                f.write(category)
+                f.write('/n')
 
     # def update_subs():
      
