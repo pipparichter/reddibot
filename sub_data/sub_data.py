@@ -2,7 +2,6 @@ import requests
 import random
 import pandas as pd
 import sys
-import time
 # Make sure the parent directory is in path so reddibot can be imported
 sys.path.append("../")
 
@@ -39,14 +38,20 @@ class SubNamesBot(reddibot.Bot):
                 # Trying to prevent reddit from ratelimiting me
                 # time.sleep(8)
 
-            except requests.ConnectionError:
-                print("ConnectionError thrown, subreddit data has been saved.")
+            except requests.ConnectionError as err:
+                print(err)
                 # Break out of 'while' loop and save data
                 break
-
+                
             # raw_sub_data is now a list of dictionaries, each containing data on a different subreddit
-            raw_sub = response["children"][0]["data"]
-            new = {}
+            try:
+                raw_sub = response["children"][0]["data"]
+                new = {}
+
+            except IndexError as err:
+                print(err)
+                # An IndexError seems to occur when there are no more subs to scrape
+                break
 
             new["SUB_NAME"] = raw_sub["display_name"]
             new["FULLNAME"] = raw_sub["name"]
@@ -92,7 +97,7 @@ class SubNamesBot(reddibot.Bot):
         with open("categories.txt", 'w') as f:
             for category in self.advertiser_categories:
                 f.write(category)
-                f.write('/n')
+                f.write('\n')
 
     # def update_subs():
      
