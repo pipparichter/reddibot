@@ -12,7 +12,7 @@ def remove_duplicates(lst):
         if lst[i] == lst[i + 1]:
             lst[i + 1] = None
 
-    return [word for word in lst if word != None]
+    return [word for word in lst if word is not None]
 
 
 # Load and clean dictionaries
