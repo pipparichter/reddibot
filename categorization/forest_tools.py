@@ -1,4 +1,5 @@
 import sys
+sys.path.append("./data/")
 sys.path.append("./dictionaries/")
 sys.path.append("../sub_names/")
 
@@ -32,6 +33,7 @@ class Subreddit:
     def __init__(self, name, category = None):
         
         self.name = name
+        print(name)
         self.category = category
     
         self.build_attributes()
@@ -40,14 +42,14 @@ class Subreddit:
     # This part of the process will probably need to be sped up
     def build_attributes(self):
         
-        for word in combined[letter]:
+        for word in combined:
                 
             pattern = re.compile(f"{word}")
             # What is the difference between 'is not' and '!='?
             if pattern.search(self.name) is not None:
-                attributes[word] = True
+                self.attributes[word] = True
             else:
-                attributes[word] = False
+                self.attributes[word] = False
 
 # Class for implementing a node in the decision tree
 class Node:
@@ -151,7 +153,7 @@ class DecisionTree:
             # of instances of each category (an int) as values
             cats = {}
         
-            for sub in node:
+            for sub in node.data:
                 if sub.category in cats:
                     cats[sub.category] += 1
                 else:
@@ -197,7 +199,7 @@ class DecisionTree:
     
     # Returns the inputted Subreddit object with an assigned category; the first Node
     # object plugged into the function should be the root node
-    def predict_sub(sub, node = None):
+    def predict_sub(self, sub, node = None):
         
         if node is None:
             node = self.root
@@ -223,10 +225,11 @@ class DecisionTree:
     def predict(self, test_data):
     
         predicted = []
-        self.generate_tree()
         
         for sub in test_data:
-            predicted.append(DecisionTree.sub_predict(self.root, sub))
+            sub = sub.copy()
+            self.predict_sub(sub)
+            predicted.append(sub)
         
         return predicted
 
@@ -250,14 +253,14 @@ class RandomForest:
 
     def __init__(self):
         # Initialize the 'test' and 'training' attributes
-        training_info = pd.read_csv("./data/training_data.csv").drop("FULLNAME")
+        training_info = pd.read_csv("./data/training_data.csv", index_col = 0)[0:1]
         self.training = [Subreddit(t[0], t[1]) for t in training_info.itertuples(index = False)]
         
-        test_info = list(pd.read_csv("./data/test_data.csv")["SUB_NAME"])
+        test_info = list(pd.read_csv("./data/test_data.csv")["SUB_NAME"])[0:1]
         self.test = [Subreddit(name) for name in test_info]
 
         with open("./data/categories.txt", 'r') as f:
-            categories = f.read.split('\n')
+            categories = f.read().split('\n')
             self.categories = categories
     
     # Returns a list of Subreddit objects from the training dataset (i.e. with known
@@ -265,18 +268,21 @@ class RandomForest:
     def bootstrap(self):
         # 'subbag' is a subset of the training set selected randomly with replacement
         bag = []
-
+        # Around 80 percent of the total training data is the recommended size for a
+        # without-replacement bag (see random_forest_notes.md)
         for i in range(int(0.8*self.N)):
             bag.append(random.choice(self.training))
         
         return subbag
 
+
     def generate_forest(self):
        
-        self.trees = []
+        trees = []
         # How many decision trees should there be?
-        for i in range():
+        for i in range(50):
             training_set = self.bootstrap()
             # Initialize a decision tree with the training data
             tree = DecisionTree(training_set)
-            trees.append(tree) 
+            trees.append(tree)
+        self.trees = trees

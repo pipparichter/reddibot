@@ -27,9 +27,9 @@ sub_data = load_subs()
 # Create lists to hold the data 
 test_subs = []
 training_subs = [[], []]
-print(sub_data)
+
 for i in range(len(sub_data.index)):
-    print(i)
+    
     sub = sub_data.iloc[i]
     # Testing if the value in the CATEGORY column is NaN
     if sub["CATEGORY"] != sub["CATEGORY"]:
