@@ -99,14 +99,15 @@ class Node:
     def split_node_optimized(self):
         # The highest possible Gini impurity index is 1.0
         lowest_gini = 1.0
+        
         # 'best_split' will eventually be a list of two Node objects representing left and
         # right children
-        best_split_children = None
+        best_split_children = [] 
         best_split_criterion = None
+
         # Test each criterion by splitting the Node with respect to every possible word
         for criterion in Node.criteria:
-            
-            poss_children = Node.split_node(self, criterion)
+            poss_children = self.split_node(criterion)
             gini = DecisionTree.get_gini(poss_children)
 
             if gini < lowest_gini:
@@ -116,8 +117,10 @@ class Node:
         # If no split exists that's more efficient than 1.0, then the current Node object is a terminal Node
         if (lowest_gini == 1.0):
             self.is_terminal = True
+            
             # Assign the terminal Node a category
-            self.category = max([sub.category for sub in self.data], key = list.count)
+            cat_lst = [sub.category for sub in self.data]
+            self.category = max([sub.category for sub in self.data], key = cat_lst.count)
         else:
             # Apply the split to self
             self.children = best_split_children
@@ -127,15 +130,15 @@ class Node:
 # Class for implementing a decision tree
 class DecisionTree:
     
-    max_depth = 100
+    max_depth = 10
     # 'tree' is a Node object instance
     root = None
     
     # Initialize the decision tree with training data by inputting a list of Subreddit objects
     def __init__(self, training_data):
-
-        self.root = Node(training_data)
-        self.generate_tree()
+        
+        root = Node(training_data)
+        self.root = DecisionTree.generate_tree(root, self.max_depth)
         
     # This calculates the Gini impurity of a given split (used only for training set
     # Subreddit objects)
@@ -165,7 +168,7 @@ class DecisionTree:
             
             # 'g_node' is the Gini impurity for a single node; this value is then weighted according
             # to the relative size of the node
-            node_gini = 1 - s
+            node_gini = 1 - node_sum 
             node_gini_weighted = node_gini*(node_size/total_size)
             # gini is the total Gini index for the split, to which the weighted indices for each node are added
             gini += node_gini_weighted
@@ -174,29 +177,31 @@ class DecisionTree:
    
     # If this doesn't work, then it's not mutating the child Nodes inplace
     
-    # Creates the decision tree; it takes a root node as input, and grows the tree
-    def generate_tree(self, node = None, count = 0):
-        
-        if node is None:
-            node = self.root
+    # Creates the decision tree; it takes a root node as input, and grows the tree; it
+    # returns the root node
+    def generate_tree(node, max_depth, count = 0):
+        print(count) 
 
         # Populates the 'children' attibute of 'node'
         node.split_node_optimized()
         count += 1
-        
-        # If the node is terminal, stop growing the branch
+     
+        # If the node is terminal, stop growing the node
         if node.is_terminal:
-            return
-
+            print(node)
+            return node 
         # If the max depth has been reached, stop growing the branch
-        if (count == self.max_depth):
-            return
+        if (count == max_depth):
+            return node
 
         left_child, right_child = node.children[0], node.children[1]
+        print(left_child.data, right_child.data)
         # If branch growth can continue, call generate_tree on each child node
-        self.generate_tree(left_child, count)
-        self.generate_tree(right_child, count)
-    
+        node.children[0] = DecisionTree.generate_tree(node = left_child , count = count)
+        node.children[1] = DecisionTree.generate_tree(node = right_child, count = count)
+        
+        return node
+
     # Returns the inputted Subreddit object with an assigned category; the first Node
     # object plugged into the function should be the root node
     def predict_sub(self, sub, node = None):
@@ -258,10 +263,14 @@ class RandomForest:
         
         test_info = list(pd.read_csv("./data/test_data.csv")["SUB_NAME"])[0:1]
         self.test = [Subreddit(name) for name in test_info]
+        
+        print(self.training)
 
         with open("./data/categories.txt", 'r') as f:
             categories = f.read().split('\n')
             self.categories = categories
+        
+        self.trees = self.generate_forest()
     
     # Returns a list of Subreddit objects from the training dataset (i.e. with known
     # categories)
@@ -270,19 +279,20 @@ class RandomForest:
         bag = []
         # Around 80 percent of the total training data is the recommended size for a
         # without-replacement bag (see random_forest_notes.md)
-        for i in range(int(0.8*self.N)):
+        for i in range(int(1 + 0.8*self.N)):
             bag.append(random.choice(self.training))
         
-        return subbag
+        return bag
 
 
     def generate_forest(self):
        
         trees = []
+
         # How many decision trees should there be?
-        for i in range(50):
+        for i in range(5):
             training_set = self.bootstrap()
             # Initialize a decision tree with the training data
             tree = DecisionTree(training_set)
             trees.append(tree)
-        self.trees = trees
+        return trees
